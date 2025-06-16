@@ -262,19 +262,20 @@ else:
                         st.rerun()
 
             # --- History ---
-            st.markdown("#### 📜 Chore History")
-            with sqlite3.connect(DB_FILE) as conn:
-                c = conn.cursor()
-                c.execute("""
-                    SELECT chore_name, completed_at, points
-                    FROM chore_history
-                    WHERE kid_id = ?
-                    ORDER BY completed_at DESC
-                    LIMIT 5
-                """, (data["id"],))
-                rows = c.fetchall()
-                if rows:
-                    for name_, date, pts in rows:
-                        st.markdown(f"- ✅ _{name_}_ on `{date[:10]}` • 💯 {pts} pts")
-                else:
-                    st.markdown("_No history yet_")
+                        # --- History ---
+            with st.expander("📜 View Chore History"):
+                with sqlite3.connect(DB_FILE) as conn:
+                    c = conn.cursor()
+                    c.execute("""
+                        SELECT chore_name, completed_at, points
+                        FROM chore_history
+                        WHERE kid_id = ?
+                        ORDER BY completed_at DESC
+                        LIMIT 10
+                    """, (data["id"],))
+                    rows = c.fetchall()
+                    if rows:
+                        for name_, date, pts in rows:
+                            st.markdown(f"- ✅ _{name_}_ on `{date[:10]}` • 💯 {pts} pts")
+                    else:
+                        st.markdown("_No completed chores yet_")
