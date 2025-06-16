@@ -262,7 +262,7 @@ else:
                         st.rerun()
 
             # --- History ---
-                        # --- History ---
+                        # --- History ---g
             with st.expander("📜 View Chore History"):
                 with sqlite3.connect(DB_FILE) as conn:
                     c = conn.cursor()
