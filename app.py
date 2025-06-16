@@ -40,37 +40,6 @@ def init_db():
         )""")
 
 
-        # Initial Data
-        c.execute("SELECT COUNT(*) FROM kids")
-        if c.fetchone()[0] == 0:
-            c.executemany("INSERT INTO kids (name, points) VALUES (?, ?)", [
-                ("Charles", 100), ("Carys", 50), ("Wynne", 75),
-            ])
-            conn.commit()
-
-        c.execute("SELECT id, name FROM kids")
-        kid_ids = {name: kid_id for kid_id, name in c.fetchall()}
-
-        c.execute("SELECT COUNT(*) FROM chores")
-        if c.fetchone()[0] == 0:
-            next_monday = (datetime.today() + timedelta(days=(7 - datetime.today().weekday()) % 7)).date()
-            c.executemany("""INSERT INTO chores (kid_id, name, recurrence, day, start_date, interval_days, points)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)""", [
-                (kid_ids["Carys"], "Feed the Dogs", "Daily", "Any", '', 0, 10),
-                (kid_ids["Wynne"], "Feed the Cats", "Daily", "Any", '', 0, 10),
-                (kid_ids["Charles"], "Take out Recycling", "Bi-weekly", "Monday", next_monday.strftime("%Y-%m-%d"), 14, 20),
-            ])
-            conn.commit()
-
-        c.execute("SELECT COUNT(*) FROM rewards")
-        if c.fetchone()[0] == 0:
-            rewards = [("30 mins iPad", 50), ("Pick Dinner", 40), ("Sleepover", 100)]
-            for name in kid_ids:
-                for reward_name, cost in rewards:
-                    c.execute("INSERT INTO rewards (kid_id, name, cost) VALUES (?, ?, ?)",
-                              (kid_ids[name], reward_name, cost))
-            conn.commit()
-
 # ---------- HELPER FUNCTIONS ----------
 def get_kids_with_chores():
     with sqlite3.connect(DB_FILE) as conn:
