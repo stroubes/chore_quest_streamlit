@@ -201,6 +201,42 @@ if nav == "Parent Admin":
                 st.rerun()
 
         # Add Rewards
+                # Manage Rewards
+        with st.expander("🛠️ Edit Existing Rewards"):
+            kids = get_kids_with_chores()
+            selected_kid = st.selectbox("Select a Kid", list(kids.keys()), key="edit_rewards_kid")
+            kid_id = kids[selected_kid]["id"]
+
+            with sqlite3.connect(DB_FILE) as conn:
+                c = conn.cursor()
+                c.execute("""
+                    SELECT id, name, cost FROM rewards
+                    WHERE kid_id = ? AND is_claimed = 0 AND is_approved = 0
+                """, (kid_id,))
+                rewards = c.fetchall()
+
+                if not rewards:
+                    st.info("No editable rewards available for this child.")
+                else:
+                    for reward_id, reward_name, reward_cost in rewards:
+                        with st.form(key=f"edit_reward_{reward_id}", clear_on_submit=False):
+                            new_name = st.text_input("Reward Name", value=reward_name, key=f"rn_{reward_id}")
+                            new_cost = st.number_input("Cost", min_value=1, value=reward_cost, key=f"rc_{reward_id}")
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                if st.form_submit_button("💾 Save Changes"):
+                                    c.execute("UPDATE rewards SET name = ?, cost = ? WHERE id = ?",
+                                              (new_name, new_cost, reward_id))
+                                    conn.commit()
+                                    st.success("Reward updated!")
+                                    st.experimental_rerun()
+                            with col2:
+                                if st.form_submit_button("🗑️ Delete"):
+                                    c.execute("DELETE FROM rewards WHERE id = ?", (reward_id,))
+                                    conn.commit()
+                                    st.warning("Reward deleted.")
+                                    st.experimental_rerun()
+
         with st.expander("🎯 Add Reward"):
             reward_kid = st.selectbox("Reward For", list(kids.keys()), key="reward_kid")
             reward_name = st.text_input("Reward Name", key="reward_name")
